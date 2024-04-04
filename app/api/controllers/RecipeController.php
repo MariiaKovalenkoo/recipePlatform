@@ -2,16 +2,21 @@
 
 namespace App\Api\Controllers;
 use App\Models\Recipe;
+use App\Services\ImageService;
 use App\Services\RecipeService;
 
 class RecipeController
 {
     private RecipeService $recipeService;
+    private ImageService $imageService;
+
 
     function __construct()
     {
         session_start();
         $this->recipeService = new RecipeService();
+        $this->imageService = new ImageService();
+
     }
 
     public function create()
@@ -23,17 +28,34 @@ class RecipeController
             exit();
         }
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        // Textual data will be accessible via $_POST
+        $data = $_POST; // This replaces json_decode(file_get_contents('php://input'), true);
+        // Ensure $data has the expected fields
+
         if ($data === null) {
             http_response_code(400);
             echo json_encode(["error" => "Invalid JSON format"]);
             exit();
         }
 
+        if ($_FILES['imageUpload']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $imgPath = $this->imageService->uploadImage($_FILES['imageUpload']);
+            } catch (\Exception $e) {
+                http_response_code(400);
+                echo json_encode(["error" => $e->getMessage()]);
+                exit();
+            }
+        } else {
+            http_response_code(400);
+            echo json_encode(["error" => "Image upload failed. Try again, please."]);
+            exit();
+        }
+
         $recipe = new Recipe();
         $this->checkRequiredFields($data);
 
-        $this->setRecipeProperties($recipe, $data);
+        $this->setRecipeProperties($recipe, $data, $imgPath);
         $userId = $_SESSION['user']->getUserId();
         $recipe->setUserId($userId);
 
@@ -97,7 +119,7 @@ class RecipeController
             echo json_encode(['error' => 'Invalid request']);
         }
     }
-    
+
     public function update(){
         header('Content-Type: application/json');
 
@@ -154,15 +176,16 @@ class RecipeController
         }
     }
 
-    private function setRecipeProperties(Recipe $existingRecipe, array $data): void
+    private function setRecipeProperties(Recipe $recipe, array $data, string $imgPath): void
     {
-        $existingRecipe->setRecipeName(filter_var($data['recipeName'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setDescription(filter_var($data['description'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setIngredients(filter_var($data['ingredients'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setInstructions(filter_var($data['instructions'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setCuisineType(filter_var($data['cuisineType'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setMealType(filter_var($data['mealType'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setDietaryPreference(filter_var($data['dietaryPreference'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
-        $existingRecipe->setIsPublic(filter_var($data['isPublic'], FILTER_VALIDATE_BOOLEAN));
+        $recipe->setRecipeName(filter_var($data['recipeName'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setDescription(filter_var($data['description'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setIngredients(filter_var($data['ingredients'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setInstructions(filter_var($data['instructions'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setCuisineType(filter_var($data['cuisineType'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setMealType(filter_var($data['mealType'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setDietaryPreference(filter_var($data['dietaryPreference'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+        $recipe->setIsPublic(filter_var($data['isPublic'], FILTER_VALIDATE_BOOLEAN));
+        $recipe->setImgPath($imgPath);
     }
 }

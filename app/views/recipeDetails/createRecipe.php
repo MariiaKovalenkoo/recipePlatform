@@ -5,26 +5,36 @@ use App\Models\Enums\MealType;
 
 include __DIR__ . '/../header.php'; ?>
 
-<div class="container m-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <h3 class="text-center"> Create a recipe </h3>
         <div class="col-md-6">
-            <form id="recipe-form" class="p-4 border rounded shadow-sm bg-white" method="POST">
+
+            <form id="recipe-form" class="p-4 border rounded shadow bg-light" method="POST" enctype="multipart/form-data">
+                <h3 class="text-center mb-4">Create a Recipe</h3>
                 <div class="mb-3">
                     <label for="recipeName" class="form-label">Recipe Name*:</label>
-                    <input type="text" class="form-control" id="recipeName" name="recipeName" >
+                    <input type="text" class="form-control" id="recipeName" name="recipeName" required>
                 </div>
+
+                <div class="mb-3">
+                    <label for="imageUpload" class="form-label">Recipe Image*:</label>
+                    <input class="form-control bg-info-subtle" type="file" id="imageUpload" name="imageUpload" required accept="image/png, image/jpeg">
+                    <div class="form-text">Accepted formats: .jpg, .png (Max size: 5MB)</div>
+                </div>
+
                 <div class="mb-3">
                     <label for="description" class="form-label">Description:</label>
-                    <textarea class="form-control" id="description" name="description"></textarea>
+                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                 </div>
+
                 <div class="mb-3">
                     <label for="ingredients" class="form-label">Ingredients*:</label>
-                    <textarea class="form-control" id="ingredients" name="ingredients" ></textarea>
+                    <textarea class="form-control" id="ingredients" name="ingredients" required rows="4"></textarea>
                 </div>
+
                 <div class="mb-3">
                     <label for="instructions" class="form-label">Instructions*:</label>
-                    <textarea class="form-control" id="instructions" name="instructions" ></textarea>
+                    <textarea class="form-control" id="instructions" name="instructions" required rows="4"></textarea>
                 </div>
                 <div class="mb-3">
                     <label for="cuisineType" class="form-label">Cuisine Type:</label>
@@ -34,6 +44,7 @@ include __DIR__ . '/../header.php'; ?>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
                 <div class="mb-3">
                     <label for="dietaryPreference" class="form-label">Dietary Preference:</label>
                     <select class="form-select" id="dietaryPreference" name="dietaryPreference" required>
@@ -42,6 +53,7 @@ include __DIR__ . '/../header.php'; ?>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
                 <div class="mb-3">
                     <label for="mealType" class="form-label">Meal Type* (this field is mandatory):</label>
                     <select class="form-select" id="mealType" name="mealType" required>
@@ -50,6 +62,7 @@ include __DIR__ . '/../header.php'; ?>
                         <?php endforeach; ?>
                     </select>
                 </div>
+
                 <div class="mb-3">
                     <label for="isPublic" class="form-label">Visibility:</label>
                     <select class="form-select" id="isPublic" name="isPublic" required>
@@ -57,8 +70,12 @@ include __DIR__ . '/../header.php'; ?>
                         <option value="true">Public</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" style="margin-bottom: 10px;">Create Recipe</button>
-                <div class="alert alert-danger" id="error-container" style="display: none;"></div>
+
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary">Create Recipe</button>
+                </div>
+
+                <div class="alert alert-danger mt-3" id="error-container" style="display: none;"></div>
             </form>
         </div>
     </div>
@@ -71,26 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const formData = new FormData(form);
-        const payload = {
-            recipeName: formData.get('recipeName'),
-            description: formData.get('description'),
-            ingredients: formData.get('ingredients'),
-            instructions: formData.get('instructions'),
-            cuisineType: formData.get('cuisineType'),
-            dietaryPreference: formData.get('dietaryPreference'),
-            mealType: formData.get('mealType'),
-            isPublic: formData.get('isPublic') === 'true'
-        };
+        formData.set('isPublic', formData.get('isPublic') === 'true' ? 'true' : 'false');
 
         try {
             const response = await fetch('/api/recipe/create', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
+                body: formData,
             });
 
             if (response.ok) {

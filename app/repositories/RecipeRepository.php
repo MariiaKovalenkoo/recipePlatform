@@ -44,7 +44,7 @@ class RecipeRepository extends Repository
 
     public function createRecipe(Recipe $newRecipe): ?Recipe
     {
-        $stmt = $this->connection->prepare("INSERT INTO Recipe (userId, recipeName, description, ingredients, instructions, mealType, cuisineType, dietaryPreference, isPublic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $this->connection->prepare("INSERT INTO Recipe (userId, recipeName, description, ingredients, instructions, mealType, cuisineType, dietaryPreference, isPublic, imgPath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         $userId = $newRecipe->getUserId();
         $recipeName = $newRecipe->getRecipeName();
@@ -55,8 +55,9 @@ class RecipeRepository extends Repository
         $cuisineType = $newRecipe->getCuisineType();
         $dietaryPreference = $newRecipe->getDietaryPreference();
         $isPublic = ($newRecipe->getIsPublic()) ? 1 : 0;
+        $imgPath = $newRecipe->getImgPath();
 
-        $stmt->execute([$userId, $recipeName, $description, $ingredients, $instructions, $mealType, $cuisineType, $dietaryPreference, $isPublic]);
+        $stmt->execute([$userId, $recipeName, $description, $ingredients, $instructions, $mealType, $cuisineType, $dietaryPreference, $isPublic, $imgPath]);
         if ($stmt->rowCount() > 0) {
             $lastInsertId = $this->connection->lastInsertId();
             return $this->getRecipeById($lastInsertId);
@@ -100,10 +101,11 @@ class RecipeRepository extends Repository
         $cuisineType = $recipe->getCuisineType();
         $dietaryPreference = $recipe->getDietaryPreference();
         $isPublic = ($recipe->getIsPublic()) ? 1 : 0;
+        $imgPath = $recipe->getImgPath();
 
         $stmt = $this->connection->prepare("UPDATE Recipe SET userId = ?, recipeName = ?, description = ?, ingredients = ?, instructions = ?, 
-                                                mealType = ?, cuisineType = ?, dietaryPreference = ?, isPublic = ? WHERE recipeId = ?");
-        $stmt->execute([$userId, $recipeName, $description, $ingredients, $instructions, $mealType, $cuisineType, $dietaryPreference, $isPublic, $recipeId]);
+                                                mealType = ?, cuisineType = ?, dietaryPreference = ?, isPublic = ?, imgPath = ? WHERE recipeId = ?");
+        $stmt->execute([$userId, $recipeName, $description, $ingredients, $instructions, $mealType, $cuisineType, $dietaryPreference, $isPublic, $recipeId, $imgPath    ]);
         if ($stmt->rowCount() > 0) {
             return $this->getRecipeById($recipeId);
         }
