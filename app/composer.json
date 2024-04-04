@@ -1,0 +1,21 @@
+{
+    "name": "mariia/recipes-platform",
+    "description": "Recipes Management and Sharing Platform",
+    "type": "project",
+    "authors": [
+        {"name": "Mark de Haan (Ahrnuld)"},
+        {"name": "Mariia Kovalenko 705283 IT2B"}],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "App\\": ".",
+            "App\\Controllers\\": "./controllers",
+            "App\\Models\\": "./models",
+            "App\\Services\\": "./services",
+            "App\\Repositories\\": "./repositories",
+            "App\\Views\\": "./views",
+            "App\\Models\\Enums\\": "./models/enums",
+            "App\\Api\\Controllers\\": "./api/controllers"
+        }
+    }
+}

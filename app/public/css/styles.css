@@ -1,0 +1,104 @@
+.nav-pills .nav-item .nav-link {
+    color: black;
+    font-weight: bold;
+}
+.nav-pills .nav-item .nav-link:hover {
+    color: #177dfa;
+}
+
+.recipe-section-details {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #e77607;
+    border-radius: 5px;
+    background-color: #fdefdf;
+}
+
+.recipe-title {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.recipe-section {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 2px solid #e77607;
+    border-radius: 8px;
+}
+
+.header-image {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+}
+
+.header-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: black;
+    text-align: center;
+    font-size: 40px;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.recipe-section a {
+    text-decoration: none;
+    color: black;
+}
+
+.recipe-section a h2.recipe-title {
+    color: #e77607;
+    text-decoration: underline;
+}
+
+.recipe-section a h2.recipe-title:hover {
+    color: #177dfa;
+    text-decoration: underline;
+}
+
+.create-button, .edit-button {
+    background-color: orange;
+    border-color: black;
+    color: black;
+}
+
+.create-button:hover, .edit-button:hover {
+    background-color: #ff8c00;
+    border-color: black;
+    color: black;
+    font-weight: bolder;
+}
+
+.delete-button {
+    background-color: #f685a9;
+    border-color: black;
+    color: black;
+}
+
+.delete-button:hover {
+    background-color: #ee668c;
+    border-color: black;
+    color: black;
+    font-weight: bolder;
+}
+
+.change-visibility-button {
+    background-color: #a8f32d;
+    border-color: black;
+    color: black;
+}
+
+.change-visibility-button:hover {
+    background-color: #57dc14;
+    border-color: black;
+    color: black;
+    font-weight: bolder;
+}
+
+
