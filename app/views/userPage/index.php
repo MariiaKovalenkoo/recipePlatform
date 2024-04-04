@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="header-image">
-                <img src="/img/userpage.jpg" class="img-fluid mx-auto d-block mb-4" alt="Recipe Platform User Page Image">
+                <img src="/img/headers/userpage.jpg" class="img-fluid mx-auto d-block mb-4" alt="Recipe Platform User Page Image">
                 <div class="header-title">Hello, <?php echo $loggedInUser->getFullName(); ?></div>
             </div>
         </div>

@@ -12,7 +12,7 @@ class RecipeRepository extends Repository
     {
         $stmt = $this->connection->prepare("SELECT recipeId, recipeName, description, ingredients, 
                                                 instructions, mealType, dietaryPreference, 
-                                                cuisineType, isPublic, userId FROM Recipe WHERE recipeId = ?");
+                                                cuisineType, isPublic, userId , imgPath FROM Recipe WHERE recipeId = ?");
         $stmt->setFetchMode(PDO::FETCH_CLASS, 'App\Models\Recipe');
         $stmt->execute([$recipeId]);
         $recipe = $stmt->fetch();
@@ -23,7 +23,7 @@ class RecipeRepository extends Repository
     {
         $stmt = $this->connection->prepare("SELECT recipeId, recipeName, description, ingredients, 
                                                 instructions, mealType, dietaryPreference, 
-                                                cuisineType, isPublic, userId FROM Recipe WHERE userId = ?");
+                                                cuisineType, isPublic, userId, imgPath FROM Recipe WHERE userId = ?");
         $stmt->setFetchMode(PDO::FETCH_CLASS, 'App\Models\Recipe');
         $stmt->execute([$userId]);
         $recipes = $stmt->fetchAll();
@@ -35,7 +35,7 @@ class RecipeRepository extends Repository
     {
         $stmt = $this->connection->prepare("SELECT recipeId, recipeName, description, ingredients, 
                                         instructions, mealType, dietaryPreference, 
-                                        cuisineType, isPublic, userId FROM Recipe WHERE isPublic = TRUE");
+                                        cuisineType, isPublic, userId, imgPath FROM Recipe WHERE isPublic = TRUE");
         $stmt->setFetchMode(PDO::FETCH_CLASS, 'App\Models\Recipe');
         $stmt->execute();
         $recipes = $stmt->fetchAll();

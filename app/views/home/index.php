@@ -4,13 +4,12 @@
     <div class="row">
         <div class="col-md-12">
             <div class="header-image">
-                <img src="/img/header.jpg" class="img-fluid mx-auto d-block mb-4" alt="Recipe Platform Image">
+                <img src="/img/headers/home.jpg" class="img-fluid mx-auto d-block mb-4" alt="Recipe Platform Image">
                 <div class="header-title">Welcome to the Recipe Platform!</div>
             </div>
         </div>
     </div>
     <div class="row">
-        <!--<p><?php echo $loginStatus; ?></p> -->
         <?php foreach ($recipes as $recipe) { ?>
             <div class="col-md-6">
                 <section class="recipe-section">

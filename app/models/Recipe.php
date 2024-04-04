@@ -15,9 +15,22 @@ class Recipe implements JsonSerializable {
     private string $description;
     private string $ingredients;
     private string $instructions;
+    private string $imgPath;
+
+    public function getImgPath(): string {
+        return $this->imgPath;
+    }
+
+    public function setImgPath(string $imgPath): void {
+        $this->imgPath = $imgPath;
+    }
 
     public function getRecipeId(): int {
         return $this->recipeId;
+    }
+
+    public function setRecipeId(int $recipeId): void {
+        $this->recipeId = $recipeId;
     }
 
     public function getUserId(): int {
