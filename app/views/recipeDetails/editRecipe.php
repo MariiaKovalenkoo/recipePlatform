@@ -11,7 +11,8 @@ $encodedRecipe = json_encode($recipe);
 
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-9">
+        <h3 class="text-center"> Edit a recipe </h3>
+        <div class="col-md-6">
             <form id="recipe-form" class="p-4 border rounded shadow-sm" method="POST">
                 <div class="mb-3">
                     <label for="recipeName" class="form-label">Recipe Name*:</label>
