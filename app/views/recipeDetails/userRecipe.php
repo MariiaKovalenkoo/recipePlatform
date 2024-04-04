@@ -1,51 +1,41 @@
 <?php include __DIR__ . '/../header.php';
-if ($recipe) {
-    $recipeId = $recipe->getRecipeId();
-    $isPublic = $recipe->getIsPublic();
-    ?>
-
-<div class="container">
-    <section id="recipeDetailsSection" class="recipe-section-details">
-        <h2 class="recipe-title"><?= $recipe->getRecipeName() ?></h2>
-        <h4>Description:</h4><p><?= $recipe->getDescription() ?></p>
-        <h4>Instructions:</h4>
-        <p><?php echo $recipe->getIngredients(); ?></p>
-        <h4>Instructions:</h4>
-        <p><?php echo $recipe->getInstructions(); ?></p>
-        <?php if ($recipe->getMealType()) { ?>
-            <p class="recipe-info">Meal Type: <?= ucfirst(strtolower($recipe->getMealType())) ?></p>
-        <?php } ?>
-        <?php if ($recipe->getCuisineType() && $recipe->getCuisineType() !== 'NOT SPECIFIED') { ?>
-            <p class="recipe-info">Cuisine Type: <?= ucfirst(strtolower($recipe->getCuisineType())) ?></p>
-        <?php } ?>
-        <?php if ($recipe->getDietaryPreference() && $recipe->getDietaryPreference() !== 'NOT SPECIFIED') { ?>
-            <p class="recipe-info">Dietary Preference: <?= ucfirst(strtolower($recipe->getDietaryPreference())) ?></p>
-        <?php } ?>
-        <?php if ($isPublic !== null) { ?>
-            <p class="recipe-info" id="visibilityInfo">Visibility: <?= $isPublic ? 'Public' : 'Private'; ?></p>
-        <?php } ?>
-        <div class="row">
-            <div class="col">
-                <button id="changeVisibilityBtn" class="btn btn-primary change-visibility-button">
-                    Make <?= $isPublic ? 'private' : 'public'; ?>
-                </button>
-            </div>
-            <div class="col">
-                <button id="editRecipeBtn" class="btn btn-secondary edit-button">Edit Recipe</button>
-            </div>
-            <div class="col">
-                <button id="deleteRecipeBtn" class="btn btn-danger delete-button">Delete Recipe</button>
+$recipeId = $recipe->getRecipeId();
+$isPublic = $recipe->getIsPublic();
+?>
+<div class="container mt-4 mb-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <img src="<?= $recipe->getImgPath() ?>" class="card-img-top img-fluid" alt="<?= $recipe->getRecipeName() ?>" style="object-fit: cover; height: 400px;">
+                <div class="card-body">
+                    <h2 class="card-title text-center"><?= $recipe->getRecipeName() ?></h2>
+                    <p class="card-text"><strong>Description:</strong> <?= $recipe->getDescription() ?></p>
+                    <p class="card-text"><strong>Ingredients:</strong> <?= nl2br($recipe->getIngredients()) ?></p>
+                    <p class="card-text"><strong>Instructions:</strong> <?= nl2br($recipe->getInstructions()) ?></p>
+                    <?php if ($recipe->getMealType()) { ?>
+                        <p class="card-text"><strong>Meal Type:</strong> <?= ucfirst(strtolower($recipe->getMealType())) ?></p>
+                    <?php } ?>
+                    <?php if ($recipe->getCuisineType() && $recipe->getCuisineType() !== 'NOT SPECIFIED') { ?>
+                        <p class="card-text"><strong>Cuisine Type:</strong> <?= ucfirst(strtolower($recipe->getCuisineType())) ?></p>
+                    <?php } ?>
+                    <?php if ($recipe->getDietaryPreference() && $recipe->getDietaryPreference() !== 'NOT SPECIFIED') { ?>
+                        <p class="card-text"><strong>Dietary Preference:</strong> <?= ucfirst(strtolower($recipe->getDietaryPreference())) ?></p>
+                    <?php } ?>
+                    <?php if ($isPublic !== null) { ?>
+                        <p class="card-text fw-bold" id="visibilityInfo"><strong>Visibility:</strong> <?= $isPublic ? 'Public' : 'Private'; ?></p>
+                    <?php } ?>
+                </div>
+                <div class="card-footer d-flex justify-content-center">
+                    <div class="btn-group d-flex justify-content-center">
+                        <button id="changeVisibilityBtn" class="btn change-visibility-button rounded me-4"></button>
+                        <button id="editRecipeBtn" class="btn edit-button rounded me-4">Edit Recipe</button>
+                        <button id="deleteRecipeBtn" class="btn delete-button rounded">Delete Recipe</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
 </div>
-
-    <?php
-} else {
-    echo "Recipe not found";
-}
-?>
-
 
 <script>
     const updateButtonVisibility = (isPublic) => {
