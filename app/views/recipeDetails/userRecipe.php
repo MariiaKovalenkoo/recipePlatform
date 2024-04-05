@@ -28,7 +28,7 @@ $isPublic = $recipe->getIsPublic();
                 <div class="card-footer d-flex justify-content-center">
                     <div class="btn-group d-flex justify-content-center">
                         <button id="changeVisibilityBtn" class="btn change-visibility-button rounded me-4"></button>
-                        <a href="/downloadRecipe?id=<?= $recipe->getRecipeId() ?>" class="btn save-button rounded me-4">Download Recipe PDF</a>
+                        <a href="/recipeDetails/download?id=<?= $recipe->getRecipeId() ?>" class="btn save-button rounded me-4">Download Recipe PDF</a>
                         <button id="editRecipeBtn" class="btn edit-button rounded me-4">Edit Recipe</button>
                         <button id="deleteRecipeBtn" class="btn delete-button rounded">Delete Recipe</button>
                     </div>
