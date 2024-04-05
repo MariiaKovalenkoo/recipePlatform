@@ -209,7 +209,7 @@ class RecipeController
             return;
         }
 
-        if ($fieldName = 'isPublic') {
+        if ($fieldName == 'isPublic') {
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         }
 
