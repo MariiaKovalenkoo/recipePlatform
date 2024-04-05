@@ -15,7 +15,7 @@
                 <li class="nav-item"><a href="/" class="nav-link">Explore</a></li>
                 <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) { ?>
                     <li class="nav-item"><a href="/userPage" class="nav-link">User Page</a></li>
-                    <li class="nav-item"><a href="/createRecipe" class="nav-link">Create Recipe</a></li>
+                    <li class="nav-item"><a href="/createRecipe" class="nav-link">Create New Recipe</a></li>
                     <li class="nav-item"><a href="/login/logout" class="nav-link">Log Out</a></li>
                 <?php } else { ?>
                     <li class="nav-item"><a href="/signup" class="nav-link">Sign Up</a></li>

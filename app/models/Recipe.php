@@ -5,7 +5,7 @@ namespace App\Models;
 use JsonSerializable;
 
 class Recipe implements JsonSerializable {
-    private int $recipeId = 0;
+    private int $recipeId ;
     private int $userId;
     private string $recipeName;
     private bool $isPublic;
