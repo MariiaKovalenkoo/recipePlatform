@@ -94,16 +94,21 @@ $isPublic = $recipe->getIsPublic();
             const confirmed = confirm('Are you sure you want to delete this recipe?');
             if (confirmed) {
                 try {
-                    const response = await fetch(`/api/recipe/delete?id=${recipeId}`, {
+                    const response = await fetch('/api/recipe/delete', {
                         method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: recipeId }),
                     });
-
                     if (response.ok) {
                         window.location.href = `/userPage`;
                     } else {
-                        console.error('Failed to delete recipe');
+                        const errorData = await response.json();
+                        showErrorMessage(errorData.error);
                     }
                 } catch (error) {
+                    showErrorMessage('Failed to delete recipe');
                     console.error('Error deleting recipe', error);
                 }
             }

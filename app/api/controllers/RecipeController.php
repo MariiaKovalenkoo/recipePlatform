@@ -78,15 +78,30 @@ class RecipeController
     }
     public function delete()
     {
-        if (isset($_GET['id'])) {
-            $recipeId = $_GET['id'];
+        header('Content-Type: application/json');
 
+        if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
+            exit();
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $recipeId = $data['id'] ?? null;
+
+        if ($recipeId !== null) {
             if ($this->recipeService->deleteRecipe($recipeId)) {
-                http_response_code(201);
-                echo json_encode(["success" => true, "data" => ["recipeId" => $recipeId, "message" => "Recipe updated successfully"]]);
+                http_response_code(200);
+                echo json_encode([
+                    "success" => true,
+                    "data" => [
+                        "recipeId" => $recipeId,
+                        "message" => "Recipe updated successfully"
+                    ]
+                ]);
             } else {
                 http_response_code(500);
-                echo json_encode(["success" => false, "error" => "An error occurred while updating the recipe visibility."]);
+                echo json_encode(["success" => false, "error" => "An error occurred while deleting the recipe."]);
             }
         } else {
             http_response_code(400);
