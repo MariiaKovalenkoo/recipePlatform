@@ -14,7 +14,7 @@ $encodedRecipe = json_encode($recipe);
         <div class="col-md-6">
             <form id="recipe-form" class="p-4 border rounded shadow bg-light" method="POST" enctype="multipart/form-data">
                 <h3 class="text-center mb-4">Edit a Recipe</h3>
-
+                <input type="hidden" name="recipeId" id="recipeId" value="<?= $recipe->getRecipeId() ?>">
                 <div class="mb-3">
                     <label for="recipeName" class="form-label">Recipe Name*:</label>
                     <input type="text" class="form-control" id="recipeName" name="recipeName" required>
@@ -23,6 +23,7 @@ $encodedRecipe = json_encode($recipe);
                 <div class="mb-3">
                     <label for="imageUpload" class="form-label">Recipe Image:</label>
                     <input class="form-control" type="file" id="imageUpload" name="imageUpload" accept="image/png, image/jpeg">
+                    <img class="imagePreview" src="<?= $recipe->getImgPath() ?>" alt="Image preview" style="max-width:50%; height:auto; margin:10px"/>
                     <div class="form-text">Accepted formats: .jpg, .png (Max size: 5MB)</div>
                 </div>
 
@@ -78,22 +79,6 @@ $encodedRecipe = json_encode($recipe);
                 <div class="d-flex justify-content-center">
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const recipe = <?= $encodedRecipe ?>;
-                        //console.log(recipe);
-                        if (Object.keys(recipe).length !== 0) {
-                            document.getElementById('recipeName').value = recipe.recipeName;
-                            document.getElementById('description').value = recipe.description;
-                            document.getElementById('ingredients').value = recipe.ingredients;
-                            document.getElementById('instructions').value = recipe.instructions;
-                            document.getElementById('cuisineType').value = recipe.cuisineType;
-                            document.getElementById('dietaryPreference').value = recipe.dietaryPreference;
-                            document.getElementById('mealType').value = recipe.mealType;
-                            document.getElementById('isPublic').value = recipe.isPublic;
-                        }
-                    });
-                </script>
                 <div class="alert alert-danger mt-3" id="error-container" style="display: none;"></div>
             </form>
         </div>
@@ -103,33 +88,33 @@ $encodedRecipe = json_encode($recipe);
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+        const recipe = <?= $encodedRecipe ?>;
+        //console.log(recipe);
+        if (Object.keys(recipe).length !== 0) {
+            document.getElementById('recipeName').value = recipe.recipeName;
+            document.getElementById('description').value = recipe.description;
+            document.getElementById('ingredients').value = recipe.ingredients;
+            document.getElementById('instructions').value = recipe.instructions;
+            document.getElementById('cuisineType').value = recipe.cuisineType;
+            document.getElementById('dietaryPreference').value = recipe.dietaryPreference;
+            document.getElementById('mealType').value = recipe.mealType;
+            document.getElementById('isPublic').value = recipe.isPublic;
+        }
+
         const form = document.getElementById('recipe-form');
         const errorContainer = document.getElementById('error-container');
-        const recipeId = <?php echo json_encode($recipe->getRecipeId()); ?>;
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const formData = new FormData(form);
-            const payload = {
-                recipeId: recipeId,
-                recipeName: formData.get('recipeName'),
-                description: formData.get('description'),
-                ingredients: formData.get('ingredients'),
-                instructions: formData.get('instructions'),
-                cuisineType: formData.get('cuisineType'),
-                dietaryPreference: formData.get('dietaryPreference'),
-                mealType: formData.get('mealType'),
-                isPublic: formData.get('isPublic') === 'true'
-            };
-            //console.log('Payload:', payload);
+            formData.set('isPublic', formData.get('isPublic') === 'true' ? 'true' : 'false');
+
             try {
                 const response = await fetch('/api/recipe/update', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload),
+                    method: 'POST',
+                    body: formData,
                 });
 
                 if (response.ok) {
@@ -150,6 +135,24 @@ $encodedRecipe = json_encode($recipe);
             } catch (error) {
                 errorContainer.textContent = error;
                 errorContainer.style.display = 'block';
+            }
+        });
+    });
+
+    document.querySelectorAll('input[type="file"]').forEach(function(input) {
+        input.addEventListener('change', function(event) {
+            let imageInput = event.target;
+            let preview = imageInput.nextElementSibling;
+
+            if (imageInput.files && imageInput.files[0]) {
+                let reader = new FileReader();
+
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block'; // Make the image visible
+                };
+
+                reader.readAsDataURL(imageInput.files[0]); // Read the file and use it as the source for the image preview
             }
         });
     });

@@ -52,4 +52,10 @@ class RecipeService
         $repository = new RecipeRepository();
         return $repository->updateRecipe($recipeId);
     }
+
+    public function updateImage($recipeId, $imgPath): bool
+    {
+        $repository = new RecipeRepository();
+        return $repository->updateImage($recipeId, $imgPath);
+    }
 }

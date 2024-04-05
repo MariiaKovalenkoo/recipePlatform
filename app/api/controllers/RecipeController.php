@@ -55,7 +55,8 @@ class RecipeController
         $recipe = new Recipe();
         $this->checkRequiredFields($data);
 
-        $this->setRecipeProperties($recipe, $data, $imgPath);
+        $this->setRecipeProperties($recipe, $data);
+        $recipe->setImgPath($imgPath);
         $userId = $_SESSION['user']->getUserId();
         $recipe->setUserId($userId);
 
@@ -123,18 +124,26 @@ class RecipeController
     public function update(){
         header('Content-Type: application/json');
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo json_encode(["error" => "Method Not Allowed"]);
             exit();
         }
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        // Textual data will be accessible via $_POST
+        $data = $_POST; // This replaces json_decode(file_get_contents('php://input'), true);
+        // Ensure $data has the expected fields
+
         if ($data === null) {
             http_response_code(400);
             echo json_encode(["error" => "Invalid JSON format"]);
             exit();
         }
+
+
+
+        //parse_str(file_get_contents('php://input'), $data);
+        
 
         $recipeId = $data['recipeId'] ?? null;
         if ($recipeId === null) {
@@ -152,8 +161,20 @@ class RecipeController
 
         $this->checkRequiredFields($data);
 
+        if ($_FILES['imageUpload']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $imgPath = $this->imageService->uploadImage($_FILES['imageUpload']);
+                $this->recipeService->updateImage($recipeId, $imgPath);
+            } catch (\Exception $e) {
+                http_response_code(400);
+                echo json_encode(["error" => $e->getMessage()]);
+                exit();
+            }
+        }
+
         $this->setRecipeProperties($existingRecipe, $data);
         $updatedRecipe = $this->recipeService->updateRecipe($existingRecipe);
+
         if ($updatedRecipe) {
             http_response_code(200); // OK
             echo json_encode(["success" => true, "data" => ["recipeId" => $updatedRecipe->getRecipeId(), "message" => "Recipe updated successfully"]]);
@@ -176,7 +197,7 @@ class RecipeController
         }
     }
 
-    private function setRecipeProperties(Recipe $recipe, array $data, string $imgPath): void
+    private function setRecipeProperties(Recipe $recipe, array $data): void
     {
         $recipe->setRecipeName(filter_var($data['recipeName'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
         $recipe->setDescription(filter_var($data['description'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
@@ -186,6 +207,5 @@ class RecipeController
         $recipe->setMealType(filter_var($data['mealType'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
         $recipe->setDietaryPreference(filter_var($data['dietaryPreference'], FILTER_SANITIZE_FULL_SPECIAL_CHARS));
         $recipe->setIsPublic(filter_var($data['isPublic'], FILTER_VALIDATE_BOOLEAN));
-        $recipe->setImgPath($imgPath);
     }
 }

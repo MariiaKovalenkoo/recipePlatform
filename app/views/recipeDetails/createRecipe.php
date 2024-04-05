@@ -19,6 +19,7 @@ include __DIR__ . '/../header.php'; ?>
                 <div class="mb-3">
                     <label for="imageUpload" class="form-label">Recipe Image*:</label>
                     <input class="form-control bg-info-subtle" type="file" id="imageUpload" name="imageUpload" required accept="image/png, image/jpeg">
+                    <img class="imagePreview" src="" alt="Image preview" style="display:none; max-width:50%; height:auto; margin:10px"/>
                     <div class="form-text">Accepted formats: .jpg, .png (Max size: 5MB)</div>
                 </div>
 

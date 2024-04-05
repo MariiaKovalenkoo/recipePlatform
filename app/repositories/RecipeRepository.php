@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Recipe;
+use Exception;
 use PDO;
 use PDOException;
 
@@ -101,14 +102,24 @@ class RecipeRepository extends Repository
         $cuisineType = $recipe->getCuisineType();
         $dietaryPreference = $recipe->getDietaryPreference();
         $isPublic = ($recipe->getIsPublic()) ? 1 : 0;
-        $imgPath = $recipe->getImgPath();
 
         $stmt = $this->connection->prepare("UPDATE Recipe SET userId = ?, recipeName = ?, description = ?, ingredients = ?, instructions = ?, 
-                                                mealType = ?, cuisineType = ?, dietaryPreference = ?, isPublic = ?, imgPath = ? WHERE recipeId = ?");
-        $stmt->execute([$userId, $recipeName, $description, $ingredients, $instructions, $mealType, $cuisineType, $dietaryPreference, $isPublic, $recipeId, $imgPath    ]);
+                                                mealType = ?, cuisineType = ?, dietaryPreference = ?, isPublic = ? WHERE recipeId = ?");
+        $stmt->execute([$userId, $recipeName, $description, $ingredients, $instructions, $mealType, $cuisineType, $dietaryPreference, $isPublic, $recipeId]);
         if ($stmt->rowCount() > 0) {
             return $this->getRecipeById($recipeId);
         }
         return null;
+    }
+
+    public function updateImage($recipeId, $imgPath): bool
+    {
+        $stmt = $this->connection->prepare("UPDATE Recipe SET imgPath = ? WHERE recipeId = ?");
+        $stmt->execute([$imgPath, $recipeId]);
+        if($stmt->rowCount() > 0){
+            return true;
+        } else{
+            throw new Exception("Error updating image");
+        }
     }
 }
