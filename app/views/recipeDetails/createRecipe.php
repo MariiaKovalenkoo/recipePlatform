@@ -80,6 +80,8 @@ include __DIR__ . '/../header.php'; ?>
     </div>
 </div>
 
+<script src="/scripts/previewImage.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('recipe-form');

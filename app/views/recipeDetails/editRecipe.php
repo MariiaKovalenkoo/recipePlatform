@@ -75,12 +75,14 @@ include __DIR__ . '/../header.php';
                     </select>
                 </div>
                 <div class="d-flex justify-content-center">
-                    <a href="/recipeDetails?id=<?= $recipe->getRecipeId() ?>" class="btn btn-primary">View recipe</a>
+                    <a href="/recipeDetails?id=<?= $recipe->getRecipeId() ?>" class="btn btn-primary">Save recipe</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script src="/scripts/previewImage.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -99,6 +101,10 @@ include __DIR__ . '/../header.php';
         }
 
         const form = document.getElementById('recipe-form');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
 
         form.addEventListener('blur', async (e) => {
             if (e.target.matches('input:not([type="file"]), textarea, select')) {
