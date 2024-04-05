@@ -7,55 +7,70 @@ use App\Repositories\RecipeRepository;
 
 class RecipeService
 {
+    private RecipeRepository $repository;
+    private ImageService $imageService;
+
+    public function __construct()
+    {
+        $this->repository = new RecipeRepository();
+        $this->imageService = new ImageService();
+    }
+
     public function getAllPublicRecipes(): array
     {
-        $repository = new RecipeRepository();
-        return $repository->getAllPublicRecipes();
+        return $this->repository->getAllPublicRecipes();
     }
 
     public function getAllRecipesByUser($userId): array
     {
-        $repository = new RecipeRepository();
-        return $repository->getAllRecipesByUser($userId);
+        return $this->repository->getAllRecipesByUser($userId);
     }
 
     public function getRecipeById($recipeId): ?Recipe{
-        $repository = new RecipeRepository();
-        return $repository->getRecipeById($recipeId);
+        return $this->repository->getRecipeById($recipeId);
     }
 
     public function createRecipe(Recipe $newRecipe) : ?Recipe
     {
-        $repository = new RecipeRepository();
-        return $repository->createRecipe($newRecipe);
+        return $this->repository->createRecipe($newRecipe);
     }
 
     public function getVisibility($recipeId): ?bool
     {
-        $repository = new RecipeRepository();
-        return $repository->getVisibility($recipeId);
+        return $this->repository->getVisibility($recipeId);
     }
 
     public function toggleVisibility($recipeId): bool{
-        $repository = new RecipeRepository();
-        return $repository->toggleVisibility($recipeId);
+        return $this->repository->toggleVisibility($recipeId);
     }
 
     public function deleteRecipe($recipeId): bool
     {
-        $repository = new RecipeRepository();
-        return $repository->deleteRecipe($recipeId);
+        $currentImg = $this->repository->getImgPathByRecipeId($recipeId);
+        if ($currentImg !== null) {
+            $this->imageService->deleteImage($currentImg);
+        }
+
+        return $this->repository->deleteRecipe($recipeId);
     }
 
     public function updateRecipe($recipeId): ?Recipe
     {
-        $repository = new RecipeRepository();
-        return $repository->updateRecipe($recipeId);
+        return $this->repository->updateRecipe($recipeId);
     }
 
     public function updateImage($recipeId, $imgPath): bool
     {
-        $repository = new RecipeRepository();
-        return $repository->updateImage($recipeId, $imgPath);
+        $currentImg = $this->repository->getImgPathByRecipeId($recipeId);
+        if ($currentImg !== null) {
+            $this->imageService->deleteImage($currentImg);
+        }
+
+        return $this->repository->updateImage($recipeId, $imgPath);
+    }
+
+    public function updateRecipeField( $recipeId, $fieldName, $value): bool
+    {
+        return $this->repository->updateRecipeField($recipeId, $fieldName, $value);
     }
 }

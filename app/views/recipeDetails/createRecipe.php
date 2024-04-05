@@ -75,8 +75,6 @@ include __DIR__ . '/../header.php'; ?>
                 <div class="d-flex justify-content-center">
                     <button type="submit" class="btn btn-primary">Create Recipe</button>
                 </div>
-
-                <div class="alert alert-danger mt-3" id="error-container" style="display: none;"></div>
             </form>
         </div>
     </div>
@@ -85,7 +83,6 @@ include __DIR__ . '/../header.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('recipe-form');
-    const errorContainer = document.getElementById('error-container');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -111,12 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 const errorData = await response.json();
-                errorContainer.textContent = errorData.error;
-                errorContainer.style.display = 'block';
+                showErrorMessage(errorData.error);
             }
         } catch (error) {
-            errorContainer.textContent = error;
-            errorContainer.style.display = 'block';
+            console.log(error)
+            showErrorMessage("Error while creating the recipe. Please try again.")
         }
     });
 });

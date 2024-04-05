@@ -5,13 +5,12 @@ use App\Models\Enums\MealType;
 
 include __DIR__ . '/../header.php';
 
-$encodedRecipe = json_encode($recipe);
-//var_dump($encodedRecipe);
+//$encodedRecipe = json_encode($recipe);
 ?>
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <form id="recipe-form" class="p-4 border rounded shadow bg-light" method="POST" enctype="multipart/form-data">
                 <h3 class="text-center mb-4">Edit a Recipe</h3>
                 <input type="hidden" name="recipeId" id="recipeId" value="<?= $recipe->getRecipeId() ?>">
@@ -24,7 +23,7 @@ $encodedRecipe = json_encode($recipe);
                     <label for="imageUpload" class="form-label">Recipe Image:</label>
                     <input class="form-control" type="file" id="imageUpload" name="imageUpload" accept="image/png, image/jpeg">
                     <img class="imagePreview" src="<?= $recipe->getImgPath() ?>" alt="Image preview" style="max-width:50%; height:auto; margin:10px"/>
-                    <div class="form-text">Accepted formats: .jpg, .png (Max size: 5MB)</div>
+                    <div class="form-text">Accepted formats: .jpg, .png (Max size: 10MB)</div>
                 </div>
 
                 <div class="mb-3">
@@ -75,21 +74,18 @@ $encodedRecipe = json_encode($recipe);
                         <option value="true">Public</option>
                     </select>
                 </div>
-
                 <div class="d-flex justify-content-center">
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="/recipeDetails?id=<?= $recipe->getRecipeId() ?>" class="btn btn-primary">View recipe</a>
                 </div>
-                <div class="alert alert-danger mt-3" id="error-container" style="display: none;"></div>
             </form>
         </div>
     </div>
 </div>
 
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const recipe = <?php echo json_encode($recipe); ?>;
 
-        const recipe = <?= $encodedRecipe ?>;
         //console.log(recipe);
         if (Object.keys(recipe).length !== 0) {
             document.getElementById('recipeName').value = recipe.recipeName;
@@ -103,56 +99,80 @@ $encodedRecipe = json_encode($recipe);
         }
 
         const form = document.getElementById('recipe-form');
-        const errorContainer = document.getElementById('error-container');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        form.addEventListener('blur', async (e) => {
+            if (e.target.matches('input:not([type="file"]), textarea, select')) {
+                const fieldName = e.target.name;
+                const value = e.target.value;
+                const recipeId = document.getElementById('recipeId').value;
 
-            const formData = new FormData(form);
-            formData.set('isPublic', formData.get('isPublic') === 'true' ? 'true' : 'false');
-
-            try {
-                const response = await fetch('/api/recipe/update', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log(responseData.data);
-                    const recipeId = responseData.data.recipeId;
-                    if (recipeId !== undefined) {
-                        window.location.href = `/recipeDetails?id=${recipeId}`;
-                    } else {
-                        console.log('Recipe ID not found, redirecting to userPage');
-                        window.location.href = '/userPage';
-                    }
-                } else {
-                    const errorData = await response.json();
-                    errorContainer.textContent = errorData.error;
-                    errorContainer.style.display = 'block';
+                const trimmedValue = e.target.value.trim();
+                if (!trimmedValue) {
+                    return;
                 }
-            } catch (error) {
-                errorContainer.textContent = error;
-                errorContainer.style.display = 'block';
+                const data = { fieldName, value, recipeId };
+
+                try {
+                    const response = await fetch('/api/recipe/updateField', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+
+                    if (response.ok) {
+                        try {
+                            const responseData = await response.json();
+                            console.log(responseData);
+                            // Your success logic here
+                        } catch (error) {
+                            console.error("Error parsing JSON:", error);
+                            // Handle parsing error
+                        }
+
+                    } else {
+                        const errorData = await response.json();
+                        console.log(errorData.error);
+                        showErrorMessage(errorData.error);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showErrorMessage(`Error`);
+                }
             }
-        });
-    });
+        }, true);
 
-    document.querySelectorAll('input[type="file"]').forEach(function(input) {
-        input.addEventListener('change', function(event) {
-            let imageInput = event.target;
-            let preview = imageInput.nextElementSibling;
+        form.addEventListener('change', async (e) => {
+            if (e.target.matches('input[type="file"]')) {
+                const fileInput = e.target;
+                const fieldName = fileInput.name;
+                const files = fileInput.files;
+                if (files.length > 0) {
+                    const formData = new FormData();
+                    formData.append(fieldName, files[0]);
+                    formData.append('recipeId', document.getElementById('recipeId').value);
 
-            if (imageInput.files && imageInput.files[0]) {
-                let reader = new FileReader();
+                    try {
+                        const response = await fetch('/api/recipe/updateImage', {
+                            method: 'POST',
+                            body: formData,
+                        });
 
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block'; // Make the image visible
-                };
-
-                reader.readAsDataURL(imageInput.files[0]); // Read the file and use it as the source for the image preview
+                        if (response.ok) {
+                            const responseData = await response.json();
+                            console.log(responseData.data);
+                            showSuccessMessage(responseData.data.message);
+                        } else {
+                            const errorData = await response.json();
+                            showErrorMessage(errorData.error);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        showErrorMessage('Error updating image.');
+                    }
+                }
             }
         });
     });

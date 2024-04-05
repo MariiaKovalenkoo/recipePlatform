@@ -4,6 +4,7 @@ namespace App\Api\Controllers;
 use App\Models\Recipe;
 use App\Services\ImageService;
 use App\Services\RecipeService;
+use Exception;
 
 class RecipeController
 {
@@ -22,15 +23,15 @@ class RecipeController
     public function create()
     {
         header('Content-Type: application/json');
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
-            echo json_encode(["error" => "Method Not Allowed"]);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
             exit();
         }
 
         // Textual data will be accessible via $_POST
         $data = $_POST; // This replaces json_decode(file_get_contents('php://input'), true);
-        // Ensure $data has the expected fields
 
         if ($data === null) {
             http_response_code(400);
@@ -38,17 +39,17 @@ class RecipeController
             exit();
         }
 
-        if ($_FILES['imageUpload']['error'] === UPLOAD_ERR_OK) {
+        if (isset($_FILES['imageUpload']) && $_FILES['imageUpload']['error'] === UPLOAD_ERR_OK) {
             try {
                 $imgPath = $this->imageService->uploadImage($_FILES['imageUpload']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 http_response_code(400);
                 echo json_encode(["error" => $e->getMessage()]);
                 exit();
             }
         } else {
             http_response_code(400);
-            echo json_encode(["error" => "Image upload failed. Try again, please."]);
+            echo json_encode(["error" => "Please upload the image."]);
             exit();
         }
 
@@ -63,7 +64,13 @@ class RecipeController
         $createdRecipe = $this->recipeService->createRecipe($recipe);
         if ($createdRecipe) {
             http_response_code(201);
-            echo json_encode(["success" => true, "data" => ["recipeId" => $createdRecipe->getRecipeId(), "message" => "Recipe created successfully"]]);
+            echo json_encode([
+                "success" => true,
+                "data" => [
+                    "recipe" => $createdRecipe,
+                    "message" => "Recipe created successfully"
+                ]
+            ]);
         } else {
             http_response_code(500);
             echo json_encode(["success" => false, "error" => "An error occurred while creating a recipe."]);
@@ -121,29 +128,62 @@ class RecipeController
         }
     }
 
-    public function update(){
+    public function updateImage()
+    {
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
-            echo json_encode(["error" => "Method Not Allowed"]);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
             exit();
         }
 
-        // Textual data will be accessible via $_POST
-        $data = $_POST; // This replaces json_decode(file_get_contents('php://input'), true);
-        // Ensure $data has the expected fields
-
-        if ($data === null) {
+        $recipeId = $_POST['recipeId'] ?? null;
+        if ($recipeId === null) {
             http_response_code(400);
-            echo json_encode(["error" => "Invalid JSON format"]);
+            echo json_encode(["error" => "Recipe ID is missing"]);
             exit();
         }
 
+        if (isset($_FILES['imageUpload']) && $_FILES['imageUpload']['error'] === UPLOAD_ERR_OK) {
+            try {
+                $imgPath = $this->imageService->uploadImage($_FILES['imageUpload']);
+                $success = $this->recipeService->updateImage($recipeId, $imgPath);
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode(["error" => $e->getMessage()]);
+                exit();
+            }
+        } else {
+            http_response_code(400);
+            echo json_encode(["error" => "No image provided."]);
+            exit();
+        }
 
+        if ($success) {
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'recipeId' => $recipeId,
+                    'imgPath' => $imgPath,
+                    'message' => 'Image was uploaded successfully.'
+                ]
+            ]);
+        } else {
+            echo json_encode(['error' => 'Image update failed.']);
+        }
+    }
 
-        //parse_str(file_get_contents('php://input'), $data);
+    public function updateField() {
+        header('Content-Type: application/json');
 
+        if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
+            exit();
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
 
         $recipeId = $data['recipeId'] ?? null;
         if ($recipeId === null) {
@@ -152,43 +192,53 @@ class RecipeController
             exit();
         }
 
-        $existingRecipe = $this->recipeService->getRecipeById($recipeId);
-        if ($existingRecipe === null) {
-            http_response_code(404);
-            echo json_encode(["error" => "Recipe not found"]);
+        if(!isset($data['fieldName']) || (empty(trim($data['value'])))) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Field name or value is missing']);
             exit();
         }
 
-        $this->checkRequiredFields($data);
+        $fieldName = filter_var($data['fieldName'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+        $value = filter_var($data['value'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-        if ($_FILES['imageUpload']['error'] === UPLOAD_ERR_OK) {
-            try {
-                $imgPath = $this->imageService->uploadImage($_FILES['imageUpload']);
-                $this->recipeService->updateImage($recipeId, $imgPath);
-            } catch (\Exception $e) {
-                http_response_code(400);
-                echo json_encode(["error" => $e->getMessage()]);
-                exit();
-            }
+        $allowedFields = ['recipeName', 'description', 'ingredients', 'instructions', 'cuisineType', 'mealType', 'dietaryPreference', 'isPublic'];
+
+        if (!in_array($fieldName, $allowedFields)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid field name']);
+            return;
         }
 
-        $this->setRecipeProperties($existingRecipe, $data);
-        $updatedRecipe = $this->recipeService->updateRecipe($existingRecipe);
+        if ($fieldName = 'isPublic') {
+            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+        }
 
-        if ($updatedRecipe) {
+        $success = $this->recipeService->updateRecipeField($recipeId, $fieldName, $value);
+        if ($success) {
             http_response_code(200); // OK
-            echo json_encode(["success" => true, "data" => ["recipeId" => $updatedRecipe->getRecipeId(), "message" => "Recipe updated successfully"]]);
+            echo json_encode(["success" => true, "data" => ["recipeId" => $recipeId, "message" => "Recipe updated successfully"]]);
         } else {
             http_response_code(500); // Internal Server Error
             echo json_encode(["success" => false, "error" => "An error occurred while updating the recipe."]);
         }
+        /*try{
+            $success = $this->recipeService->updateRecipeField($recipeId, $fieldName, $value);
+            if ($success) {
+                http_response_code(200);
+                echo json_encode(["success" => true,]);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+            exit();
+        }*/
     }
 
     private function checkRequiredFields(array $data): void
     {
         $requiredFields = ['recipeName', 'ingredients', 'instructions'];
         foreach ($requiredFields as $field) {
-            if (empty($data[$field])) {
+            if (empty(trim($data[$field]))) {
                 http_response_code(400);
                 $label = ucwords(preg_replace('/(?<=\\w)(?=[A-Z])/', ' ', $field));
                 echo json_encode(["error" => "Field '$label' is required"]);

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Recipe;
 use Exception;
+use InvalidArgumentException;
 use PDO;
 use PDOException;
 
@@ -116,10 +117,37 @@ class RecipeRepository extends Repository
     {
         $stmt = $this->connection->prepare("UPDATE Recipe SET imgPath = ? WHERE recipeId = ?");
         $stmt->execute([$imgPath, $recipeId]);
-        if($stmt->rowCount() > 0){
-            return true;
-        } else{
-            throw new Exception("Error updating image");
+        return ($stmt->rowCount() > 0);
+    }
+
+    public function getImgPathByRecipeId($recipeId)
+    {
+        $stmt = $this->connection->prepare("SELECT imgPath FROM Recipe WHERE recipeId = ?");
+        $stmt->execute([$recipeId]);
+        return $stmt->fetchColumn();
+    }
+
+    public function updateRecipeField($recipeId, $fieldName, $value): bool {
+        $allowedFields = ['recipeName', 'description', 'ingredients', 'instructions', 'mealType', 'cuisineType', 'dietaryPreference', 'isPublic'];
+
+        try{
+            if (!in_array($fieldName, $allowedFields)) {
+                throw new Exception("Invalid field name");
+            }
+
+            $sql = "UPDATE Recipe SET {$fieldName} = :value WHERE recipeId = :recipeId";
+
+            $stmt = $this->connection->prepare($sql);
+
+            $stmt->bindValue(':value', $value);
+            $stmt->bindValue(':recipeId', $recipeId, PDO::PARAM_INT);
+
+            $stmt->execute();
+
+            return ($stmt->rowCount() > 0);
+        } catch (PDOException $e) {
+            throw new Exception("Error updating field {$fieldName}: " . $e->getMessage());
         }
+
     }
 }

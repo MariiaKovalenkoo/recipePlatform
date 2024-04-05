@@ -27,26 +27,13 @@ class ImageService
         }
     }
 
-    /**
-     * Attempts to delete an image from the project.
-     *
-     * @param  string  $imgPath  Relative path to the image file from the database.
-     *                           for example, '/img/jazz/artists/artistPlaceholder.jpg'
-     *
-     * @throws Exception If the image cannot be deleted.
-     */
     public function deleteImage(string $imgPath): void
     {
         if (! empty($imgPath)) {
-            $imagePath = $_SERVER['DOCUMENT_ROOT'].$imgPath;
+            $imagePath = $_SERVER['DOCUMENT_ROOT'] . $imgPath;
             if (file_exists($imagePath)) {
-                $deleted = unlink($imagePath);
-                if (! $deleted) {
-                    throw new Exception("Failed to delete the image at: {$imgPath}.");
-                }
+                unlink($imagePath);
             }
-        } else {
-            throw new Exception('No image path provided.');
         }
     }
 }
