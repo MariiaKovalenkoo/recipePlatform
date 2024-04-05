@@ -24,4 +24,5 @@ class UserPageController
         $favRecipes = $this->favoriteService->getFavoritesByUser($loggedInUser->getUserId());
         require __DIR__ . '/../views/userPage/index.php';
     }
+
 }
