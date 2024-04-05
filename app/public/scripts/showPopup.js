@@ -21,5 +21,5 @@ function showErrorMessage(message) {
 
     setTimeout(function() {
         document.body.removeChild(messageDiv);
-    }, 5000);
+    }, 2000);
 }

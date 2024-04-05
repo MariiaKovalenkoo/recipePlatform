@@ -107,11 +107,13 @@ include __DIR__ . '/../header.php';
                 const recipeId = document.getElementById('recipeId').value;
 
                 const trimmedValue = e.target.value.trim();
-                if (!trimmedValue) {
+
+                if (recipe[fieldName] === trimmedValue) {
+                    console.log(`${fieldName} is unchanged.`);
                     return;
                 }
-                const data = { fieldName, value, recipeId };
 
+                const data = { fieldName, value, recipeId };
                 try {
                     const response = await fetch('/api/recipe/updateField', {
                         method: 'PUT',
@@ -121,25 +123,21 @@ include __DIR__ . '/../header.php';
                         body: JSON.stringify(data),
                     });
 
-
                     if (response.ok) {
-                        try {
-                            const responseData = await response.json();
-                            console.log(responseData);
-                            // Your success logic here
-                        } catch (error) {
-                            console.error("Error parsing JSON:", error);
-                            // Handle parsing error
-                        }
-
+                        const responseData = await response.json();
+                        console.log(responseData);
+                        showSuccessMessage(responseData.data.message);
+                        recipe[fieldName] = value;
                     } else {
                         const errorData = await response.json();
                         console.log(errorData.error);
                         showErrorMessage(errorData.error);
+                        e.target.value = recipe[fieldName] || '';
                     }
                 } catch (error) {
                     console.error(error);
-                    showErrorMessage(`Error`);
+                    showErrorMessage('Error updating field.');
+                    e.target.value = recipe[fieldName] || '';
                 }
             }
         }, true);

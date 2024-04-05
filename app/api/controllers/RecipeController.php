@@ -192,10 +192,17 @@ class RecipeController
             exit();
         }
 
-        if(!isset($data['fieldName']) || (empty(trim($data['value'])))) {
+        if(!isset($data['fieldName'])) {
             http_response_code(400);
-            echo json_encode(['error' => 'Field name or value is missing']);
+            echo json_encode(['error' => 'Field name is missing']);
             exit();
+        }
+        if(empty(trim($data['value']))) {
+            if($data['fieldName'] !== 'description'){
+                http_response_code(400);
+                echo json_encode(['error' => 'Field value is missing']);
+                exit();
+            }
         }
 
         $fieldName = filter_var($data['fieldName'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -206,32 +213,32 @@ class RecipeController
         if (!in_array($fieldName, $allowedFields)) {
             http_response_code(400);
             echo json_encode(['error' => 'Invalid field name']);
-            return;
+            exit();
         }
 
         if ($fieldName == 'isPublic') {
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
         }
 
-        $success = $this->recipeService->updateRecipeField($recipeId, $fieldName, $value);
-        if ($success) {
-            http_response_code(200); // OK
-            echo json_encode(["success" => true, "data" => ["recipeId" => $recipeId, "message" => "Recipe updated successfully"]]);
-        } else {
-            http_response_code(500); // Internal Server Error
-            echo json_encode(["success" => false, "error" => "An error occurred while updating the recipe."]);
-        }
-        /*try{
+        try{
             $success = $this->recipeService->updateRecipeField($recipeId, $fieldName, $value);
             if ($success) {
                 http_response_code(200);
-                echo json_encode(["success" => true,]);
+                echo json_encode([
+                    "success" => true,
+                    "data" => [
+                        "recipeId" => $recipeId,
+                        "fieldName" => $fieldName,
+                        "value" => $value,
+                        "message" => "Recipe updated successfully"
+                    ]
+                ]);
             }
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
             exit();
-        }*/
+        }
     }
 
     private function checkRequiredFields(array $data): void
