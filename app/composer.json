@@ -5,7 +5,9 @@
     "authors": [
         {"name": "Mark de Haan (Ahrnuld)"},
         {"name": "Mariia Kovalenko 705283 IT2B"}],
-    "require": {},
+    "require": {
+        "tecnickcom/tcpdf": "^6.7"
+    },
     "autoload": {
         "psr-4": {
             "App\\": ".",
