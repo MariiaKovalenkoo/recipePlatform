@@ -27,9 +27,9 @@ $isPublic = $recipe->getIsPublic();
                 </div>
                 <div class="card-footer d-flex justify-content-center">
                     <div class="btn-group d-flex justify-content-center">
-                        <button id="changeVisibilityBtn" class="btn change-visibility-button rounded me-4"></button>
+                        <button id="toggleVisibilityBtn" class="btn change-visibility-button rounded me-4" data-favorite="unknown">Loading...</button>
                         <a href="/recipeDetails/download?id=<?= $recipe->getRecipeId() ?>" class="btn save-button rounded me-4">Download Recipe PDF</a>
-                        <button id="editRecipeBtn" class="btn edit-button rounded me-4">Edit Recipe</button>
+                        <a href="/editRecipe?id=<?= $recipe->getRecipeId() ?>" class="btn edit-button rounded me-4">Edit Recipe</a>
                         <button id="deleteRecipeBtn" class="btn delete-button rounded">Delete Recipe</button>
                     </div>
                 </div>
@@ -40,55 +40,53 @@ $isPublic = $recipe->getIsPublic();
 
 <script>
     const updateButtonVisibility = (isPublic) => {
-        const changeVisibilityBtn = document.getElementById('changeVisibilityBtn');
+        const toggleVisibilityBtn = document.getElementById('toggleVisibilityBtn');
         const visibilityInfo = document.getElementById('visibilityInfo');
 
-        if (isPublic !== null) {
-            visibilityInfo.textContent = `Visibility: ${isPublic ? 'Public' : 'Private'}`;
-            changeVisibilityBtn.textContent = `Make ${isPublic ? 'private' : 'public'}`;
-        }
+        toggleVisibilityBtn.dataset.visibility = isPublic ? 'true' : 'false';
+        toggleVisibilityBtn.textContent = isPublic ? 'Make Private' : 'Make Public';
+        visibilityInfo.textContent = `Visibility: ${isPublic ? 'Public' : 'Private'}`;
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
-        const recipeId = <?= json_encode($recipeId) ?>;
+        const recipeId = <?= json_encode($recipe->getRecipeId()) ?>;
 
-        const fetchRecipeVisibility = async () => {
-            try {
-                const response = await fetch(`api/recipe/getVisibility?id=${recipeId}`, {
-                    method: 'GET',
-                });
-                if (response.ok) {
-                    const responseData = await response.json();
-                    const isRecipePublic = responseData.isPublic;
-                    updateButtonVisibility(isRecipePublic);
-                } else {
-                    console.error('Failed to fetch visibility');
-                }
-            } catch (error) {
-                console.error('Error fetching visibility', error);
+        const deleteRecipeBtn = document.getElementById('deleteRecipeBtn');
+        const toggleVisibilityBtn = document.getElementById('toggleVisibilityBtn');
+
+        const checkVisibilityStatus = async () => {
+            const response = await fetch(`/api/recipe/getVisibility?id=${recipeId}`);
+            if (response.ok) {
+                const data = await response.json();
+                updateButtonVisibility(data.isPublic);
+            } else {
+                const errorData = await response.json();
+                console.log(errorData.error);
+                showErrorMessage('Failed to check visibility status');
             }
         };
 
-        const changeVisibility = async () => {
-            try {
-                const response = await fetch(`/api/recipe/changeVisibility?id=${recipeId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log('Response Data:', responseData);
-                    updateButtonVisibility(responseData.isPublic);
-                } else {
-                    console.error('Failed to change visibility');
-                }
-            } catch (error) {
-                console.error('Error changing visibility', error);
-            }
-        };
+        toggleVisibilityBtn.addEventListener('click', async () => {
+            let method = 'POST';
 
+            const response = await fetch('/api/recipe/changeVisibility', {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({id: recipeId}),
+            });
+
+            if (response.ok) {
+                const responseData = await response.json();
+                showSuccessMessage(responseData.data.message);
+                updateButtonVisibility(responseData.isPublic);
+            } else {
+                const errorData = await response.json();
+                console.log(errorData.error);
+                showErrorMessage(errorData.error);
+            }
+        });
 
         const deleteRecipe = async () => {
             const confirmed = confirm('Are you sure you want to delete this recipe?');
@@ -113,19 +111,9 @@ $isPublic = $recipe->getIsPublic();
                 }
             }
         };
-
-        const changeVisibilityBtn = document.getElementById('changeVisibilityBtn');
-        const editRecipeBtn = document.getElementById('editRecipeBtn');
-        const deleteRecipeBtn = document.getElementById('deleteRecipeBtn');
-
-        await fetchRecipeVisibility();
-
-        editRecipeBtn.addEventListener('click', () => {
-            window.location.href = `/editRecipe?id=${recipeId}`;
-        });
-
-        changeVisibilityBtn.addEventListener('click', changeVisibility);
         deleteRecipeBtn.addEventListener('click', deleteRecipe);
+
+        await checkVisibilityStatus();
     });
 </script>
 

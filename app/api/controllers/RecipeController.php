@@ -111,21 +111,30 @@ class RecipeController
 
     public function changeVisibility()
     {
-        if (isset($_GET['id'])) {
-            $recipeId = $_GET['id'];
+        header('Content-Type: application/json');
 
-            if ($this->recipeService->toggleVisibility($recipeId)) {
-                http_response_code(201);
-                $isPublic = $this->recipeService->getVisibility($recipeId);
-                header('Content-Type: application/json');
-                echo json_encode(["success" => true, "isPublic" => $isPublic, "data" => ["recipeId" => $recipeId, "message" => "Recipe updated successfully"]]);
-            } else {
-                http_response_code(500);
-                echo json_encode(["success" => false, "error" => "An error occurred while updating the recipe visibility."]);
-            }
-        } else {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
+            exit();
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $recipeId = $data['id'] ?? null;
+        if($recipeId === null) {
             http_response_code(400);
-            echo json_encode(["success" => false, "error" => "Recipe ID is missing"]);
+            echo json_encode(["error" => "Recipe ID is required"]);
+            exit();
+        }
+
+        if ($this->recipeService->toggleVisibility($recipeId)) {
+            http_response_code(200);
+            $isPublic = $this->recipeService->getVisibility($recipeId);
+            echo json_encode(["success" => true, "isPublic" => $isPublic, "data" => ["recipeId" => $recipeId, "message" => "Status updated successfully"]]);
+        } else {
+            http_response_code(500);
+            echo json_encode(["success" => false, "error" => "An error occurred while updating the recipe visibility."]);
         }
     }
 

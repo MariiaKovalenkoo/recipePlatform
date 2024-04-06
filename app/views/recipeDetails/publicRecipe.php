@@ -35,7 +35,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
-
         const recipeId = <?= json_encode($recipe->getRecipeId()) ?>;
         const toggleFavoriteBtn = document.getElementById('toggleFavoriteBtn');
 
@@ -57,26 +56,25 @@
             let endpoint = isFavorite ? '/api/favorite/remove' : '/api/favorite/add';
             let method = isFavorite ? 'DELETE' : 'POST';
 
-                const response = await fetch(endpoint, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({id: recipeId}),
-                });
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({id: recipeId}),
+            });
 
-                if (response.ok) {
-                    const responseData = await response.json();
-                    showSuccessMessage(responseData.message);
+            if (response.ok) {
+                const responseData = await response.json();
+                showSuccessMessage(responseData.message);
 
-                    toggleFavoriteBtn.dataset.favorite = isFavorite ? 'false' : 'true';
-                    toggleFavoriteBtn.textContent = isFavorite ? 'Add to Favorites' : 'Remove from Favorites';
-                } else {
-                    const errorData = await response.json();
-                    console.log(errorData.error);
-                    showErrorMessage(errorData.error);
-                }
-
+                toggleFavoriteBtn.dataset.favorite = isFavorite ? 'false' : 'true';
+                toggleFavoriteBtn.textContent = isFavorite ? 'Add to Favorites' : 'Remove from Favorites';
+            } else {
+                const errorData = await response.json();
+                console.log(errorData.error);
+                showErrorMessage(errorData.error);
+            }
         });
 
         await checkFavoriteStatus();
