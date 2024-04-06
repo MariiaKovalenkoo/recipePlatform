@@ -9,20 +9,20 @@ $isPublic = $recipe->getIsPublic();
                 <img src="<?= $recipe->getImgPath() ?>" class="card-img-top img-fluid" alt="<?= $recipe->getRecipeName() ?>" style="object-fit: cover; height: 400px;">
                 <div class="card-body">
                     <h2 class="card-title text-center"><?= $recipe->getRecipeName() ?></h2>
-                    <p class="card-text"><strong>Description:</strong> <?= $recipe->getDescription() ?></p>
-                    <p class="card-text"><strong>Ingredients:</strong> <?= nl2br($recipe->getIngredients()) ?></p>
-                    <p class="card-text"><strong>Instructions:</strong> <?= nl2br($recipe->getInstructions()) ?></p>
+                    <p class="card-text"><strong>Description:</strong><br><?= $recipe->getDescription() ?></p>
+                    <p class="card-text"><strong>Ingredients:</strong><br> <?= nl2br($recipe->getIngredients()) ?></p>
+                    <p class="card-text"><strong>Instructions:</strong><br> <?= nl2br($recipe->getInstructions()) ?></p>
                     <?php if ($recipe->getMealType()) { ?>
-                        <p class="card-text"><strong>Meal Type:</strong> <?= ucfirst(strtolower($recipe->getMealType())) ?></p>
+                        <p class="card-text"><strong>Meal Type:</strong><br> <?= ucfirst(strtolower($recipe->getMealType())) ?></p>
                     <?php } ?>
                     <?php if ($recipe->getCuisineType() && $recipe->getCuisineType() !== 'NOT SPECIFIED') { ?>
-                        <p class="card-text"><strong>Cuisine Type:</strong> <?= ucfirst(strtolower($recipe->getCuisineType())) ?></p>
+                        <p class="card-text"><strong>Cuisine Type:</strong><br> <?= ucfirst(strtolower($recipe->getCuisineType())) ?></p>
                     <?php } ?>
                     <?php if ($recipe->getDietaryPreference() && $recipe->getDietaryPreference() !== 'NOT SPECIFIED') { ?>
-                        <p class="card-text"><strong>Dietary Preference:</strong> <?= ucfirst(strtolower($recipe->getDietaryPreference())) ?></p>
+                        <p class="card-text"><strong>Dietary Preference:</strong><br> <?= ucfirst(strtolower($recipe->getDietaryPreference())) ?></p>
                     <?php } ?>
                     <?php if ($isPublic !== null) { ?>
-                        <p class="card-text fw-bold" id="visibilityInfo"><strong>Visibility:</strong> <?= $isPublic ? 'Public' : 'Private'; ?></p>
+                        <p class="card-text fw-bolder text-primary" id="visibilityInfo">Loading...</p>
                     <?php } ?>
                 </div>
                 <div class="card-footer d-flex justify-content-center">
