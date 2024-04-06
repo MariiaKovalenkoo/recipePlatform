@@ -20,23 +20,9 @@ class PDFService
         $pdf->AddPage();
         $pdf->SetFont('helvetica', '', 12);
 
-
-        if ($recipe->getMealType() && $recipe->getMealType() !== 'NOT SPECIFIED') {
-            $htmlContent .= '<div style="margin-bottom: 20px;">
-                        <p><strong>Meal Type:</strong> ' . ucfirst(strtolower($recipe->getMealType())) . '</p>
-                     </div>';
-        }
-        if ($recipe->getCuisineType() && $recipe->getCuisineType() !== 'NOT SPECIFIED') {
-            $htmlContent .= '<div style="margin-bottom: 20px;">
-                        <p><strong>Cuisine Type:</strong> ' . ucfirst(strtolower($recipe->getCuisineType())) . '</p>
-                     </div>';
-        }
-
-        if ($recipe->getDietaryPreference() && $recipe->getDietaryPreference() !== 'NOT SPECIFIED') {
-            $pdf->writeHTML('<p><strong>Dietary Preference:</strong> ' . ucfirst(strtolower($recipe->getDietaryPreference())) . '</p>', true, false, true, false, '');
-        }
-
+        $htmlContent = $this->generateRecipeHTML($recipe);
         $pdf->writeHTML($htmlContent, true, false, true, false, '');
+
         $imgPath = $_SERVER['DOCUMENT_ROOT'].$recipe->getImgPath();
         $imageExtension = strtolower(pathinfo($imgPath, PATHINFO_EXTENSION));
 
@@ -45,30 +31,26 @@ class PDFService
         $pdf->Output($recipe->getRecipeName() . '.pdf', 'D');
     }
 
-    private function generateHTML($recipe){
-        $htmlContent = '<div style="text-align: center; margin-bottom: 20px;">
-                            <h1>{$recipe->getRecipeName()}</h1>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <p><strong>Description:</strong> {$recipe->getDescription()}</p>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <p><strong>Ingredients:</strong><br />" . nl2br($recipe->getIngredients()) . "</p>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <p><strong>Instructions:</strong><br />" . nl2br($recipe->getInstructions()) . "</p>
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                        <p><strong>Dietary Preference:</strong> ' . ucfirst(strtolower($recipe->getDietaryPreference())) . '</p>
-                        </div>';
+    private function generateRecipeHTML($recipe): string
+    {
+        $html = '<h1 style="text-align: center;">' . $recipe->getRecipeName() . '</h1>';
+        $html .= '<p><strong>Description:</strong> ' . $recipe->getDescription() . '</p>';
+        $html .= '<p><strong>Ingredients:</strong> ' . nl2br($recipe->getIngredients()) . '</p>';
+        $html .= '<p><strong>Instructions:</strong> ' . nl2br($recipe->getInstructions()) . '</p>';
 
-        $htmlContent = "<div style='border: 1px solid black; padding: 10px; margin-bottom: 10px;'>
-                        <h2>{$ticket->getEventName()}</h2>
-                        <p>Venue: {$ticket->getVenue()}</p>
-                        <p>Date and Time: {$ticket->getStartDateTime()->format('Y-m-d H:i')} to {$ticket->getEndDateTime()->format('Y-m-d H:i')}</p>
-                        <p>Name: {$ticket->getCustomerName()}</p>
-                        <p>Additional Info: {$ticket->getNote()} </p>
-                        </div>";
-        return $htmlContent;
+        if ($recipe->getMealType() && $recipe->getMealType() !== 'NOT SPECIFIED') {
+            $html .= '<p><strong>Meal Type:</strong> ' . ucfirst(strtolower($recipe->getMealType())) . '</p>';
+        }
+
+        if ($recipe->getCuisineType() && $recipe->getCuisineType() !== 'NOT SPECIFIED') {
+            $html .= '<p><strong>Cuisine Type:</strong> ' . ucfirst(strtolower($recipe->getCuisineType())) . '</p>';
+        }
+
+        if ($recipe->getDietaryPreference() && $recipe->getDietaryPreference() !== 'NOT SPECIFIED') {
+            $html .= '<p><strong>Dietary Preference:</strong> ' . ucfirst(strtolower($recipe->getDietaryPreference())) . '</p>';
+        }
+
+        return $html;
     }
+
 }
