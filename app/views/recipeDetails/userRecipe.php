@@ -67,10 +67,8 @@ $isPublic = $recipe->getIsPublic();
         };
 
         toggleVisibilityBtn.addEventListener('click', async () => {
-            let method = 'POST';
-
             const response = await fetch('/api/recipe/changeVisibility', {
-                method: method,
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
