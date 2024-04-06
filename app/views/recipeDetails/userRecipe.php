@@ -55,13 +55,18 @@ $isPublic = $recipe->getIsPublic();
         const toggleVisibilityBtn = document.getElementById('toggleVisibilityBtn');
 
         const checkVisibilityStatus = async () => {
-            const response = await fetch(`/api/recipe/getVisibility?id=${recipeId}`);
-            if (response.ok) {
-                const data = await response.json();
-                updateButtonVisibility(data.isPublic);
-            } else {
-                const errorData = await response.json();
-                console.log(errorData.error);
+            try{
+                const response = await fetch(`/api/recipe/getVisibility?id=${recipeId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateButtonVisibility(data.isPublic);
+                } else {
+                    const errorData = await response.json();
+                    console.log(errorData.error);
+                    showErrorMessage('Failed to check visibility status');
+                }
+            } catch (error) {
+                console.error('Error checking visibility status', error);
                 showErrorMessage('Failed to check visibility status');
             }
         };
@@ -77,6 +82,8 @@ $isPublic = $recipe->getIsPublic();
 
             if (response.ok) {
                 const responseData = await response.json();
+                console.log(responseData)
+
                 showSuccessMessage(responseData.data.message);
                 updateButtonVisibility(responseData.isPublic);
             } else {

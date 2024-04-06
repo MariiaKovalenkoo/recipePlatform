@@ -22,32 +22,37 @@
                     ?>
                 </div>
                 <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) { ?>
-                    <div class="card-footer text-center">
-                        <div class="btn-group">
-                            <button id="toggleFavoriteBtn" class="btn btn-info" data-favorite="unknown">Loading...</button>
-                        </div>
-                    </div>
+                    <?php include __DIR__ . '/favBtn.php';?>
                 <?php } ?>
             </div>
         </div>
     </div>
 </div>
 
+<?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) { ?>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         const recipeId = <?= json_encode($recipe->getRecipeId()) ?>;
         const toggleFavoriteBtn = document.getElementById('toggleFavoriteBtn');
 
         const checkFavoriteStatus = async () => {
-            const response = await fetch(`/api/favorite/check?id=${recipeId}`);
-            if (response.ok) {
-                const data = await response.json();
-                toggleFavoriteBtn.dataset.favorite = data.isFavorite ? 'true' : 'false';
-                toggleFavoriteBtn.textContent = data.isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
-            } else {
-                const errorData = await response.json();
-                console.log(errorData.error);
-                showErrorMessage('Failed to check favorite status')
+
+            try {
+                const response = await fetch(`/api/favorite/check?id=${recipeId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(data);
+
+                    toggleFavoriteBtn.dataset.favorite = data.isFavorite ? 'true' : 'false';
+                    toggleFavoriteBtn.textContent = data.isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+                } else {
+                    const errorData = await response.json();
+                    console.log(errorData.error);
+                    showErrorMessage('Failed to check favorite status')
+                }
+            } catch (error) {
+                console.error('Failed to check favorite status', error);
+                showErrorMessage('Failed to check favorite status');
             }
         };
 
@@ -56,30 +61,39 @@
             let endpoint = isFavorite ? '/api/favorite/remove' : '/api/favorite/add';
             let method = isFavorite ? 'DELETE' : 'POST';
 
-            const response = await fetch(endpoint, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({id: recipeId}),
-            });
+            try {
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({id: recipeId}),
+                });
 
-            if (response.ok) {
-                const responseData = await response.json();
-                showSuccessMessage(responseData.message);
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log(responseData);
 
-                toggleFavoriteBtn.dataset.favorite = isFavorite ? 'false' : 'true';
-                toggleFavoriteBtn.textContent = isFavorite ? 'Add to Favorites' : 'Remove from Favorites';
-            } else {
-                const errorData = await response.json();
-                console.log(errorData.error);
-                showErrorMessage(errorData.error);
+                    showSuccessMessage(responseData.message);
+                    toggleFavoriteBtn.dataset.favorite = isFavorite ? 'false' : 'true';
+                    toggleFavoriteBtn.textContent = isFavorite ? 'Add to Favorites' : 'Remove from Favorites';
+                } else {
+                    const errorData = await response.json();
+                    console.log(errorData.error);
+
+                    showErrorMessage(errorData.error);
+                }
+            }
+            catch (error) {
+                console.error('Failed to update favorite status', error);
+                showErrorMessage('Failed to update favorite status');
             }
         });
 
         await checkFavoriteStatus();
     });
 </script>
+<?php } ?>
 
 <?php include __DIR__ . '/../footer.php'; ?>
 
