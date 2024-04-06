@@ -24,7 +24,7 @@
                 <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) { ?>
                     <div class="card-footer text-center">
                         <div class="btn-group">
-                            <button id="toggleFavoriteBtn" class="btn btn-info" data-favorite="unknown"></button>
+                            <button id="toggleFavoriteBtn" class="btn btn-info" data-favorite="unknown">Loading...</button>
                         </div>
                     </div>
                 <?php } ?>
@@ -35,11 +35,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
+
         const recipeId = <?= json_encode($recipe->getRecipeId()) ?>;
-        console.log(recipeId);
         const toggleFavoriteBtn = document.getElementById('toggleFavoriteBtn');
 
-        // Check if the recipe is a favorite when the page loads
         const checkFavoriteStatus = async () => {
             const response = await fetch(`/api/favorite/check?id=${recipeId}`);
             if (response.ok) {
@@ -47,6 +46,8 @@
                 toggleFavoriteBtn.dataset.favorite = data.isFavorite ? 'true' : 'false';
                 toggleFavoriteBtn.textContent = data.isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
             } else {
+                const errorData = await response.json();
+                console.log(errorData.error);
                 showErrorMessage('Failed to check favorite status')
             }
         };
@@ -54,24 +55,28 @@
         toggleFavoriteBtn.addEventListener('click', async () => {
             const isFavorite = toggleFavoriteBtn.dataset.favorite === 'true';
             let endpoint = isFavorite ? '/api/favorite/remove' : '/api/favorite/add';
-            const response = await fetch(endpoint, {
-                method: 'POST', // Use POST for add/remove for simplicity, adjust if your API uses DELETE for remove
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: recipeId }),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
+            let method = isFavorite ? 'DELETE' : 'POST';
+
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({id: recipeId}),
+                });
+
+                if (response.ok) {
+                    const responseData = await response.json();
+                    showSuccessMessage(responseData.message);
+
                     toggleFavoriteBtn.dataset.favorite = isFavorite ? 'false' : 'true';
                     toggleFavoriteBtn.textContent = isFavorite ? 'Add to Favorites' : 'Remove from Favorites';
                 } else {
-                    alert(data.message || 'An error occurred');
+                    const errorData = await response.json();
+                    console.log(errorData.error);
+                    showErrorMessage(errorData.error);
                 }
-            } else {
-                showErrorMessage('Failed to add/remove from favorites');
-            }
+
         });
 
         await checkFavoriteStatus();

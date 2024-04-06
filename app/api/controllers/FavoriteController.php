@@ -18,49 +18,80 @@ class FavoriteController
         $this->favoriteService = new FavoriteService();
     }
 
-    public function check() {
+    public function check()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
+            exit();
+        }
+
         $recipeId = $_GET['id'] ?? null;
         if (!$recipeId) {
             echo json_encode(['error' => 'Recipe ID is required']);
-            return;
+            exit();
         }
 
         $isFavorite = $this->favoriteService->isFavorite($this->userId, $recipeId);
-        echo json_encode(['isFavorite' => $isFavorite]);
+        echo json_encode([ 'success' => true, 'isFavorite' => $isFavorite]);
     }
 
+
     public function add() {
+
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
+            exit();
+        }
+
         $data = json_decode(file_get_contents('php://input'), true);
         $recipeId = $data['id'] ?? null;
         if (!$recipeId) {
             echo json_encode(['error' => 'Recipe ID is required']);
-            return;
+            exit();
         }
 
-        if ($this->favoriteService->isFavorite($this->userId, $recipeId)) {
+        $isFav = $this->favoriteService->isFavorite($this->userId, $recipeId);
+        if (!$isFav) {
+            $this->favoriteService->addToFavorite($this->userId, $recipeId);
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'Added to favorites']);
+        } else {
+            http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Already in favorites']);
-            return;
         }
-
-
-        $success = $this->favoriteService->addToFavorite($this->userId, $recipeId);
-        echo json_encode(['success' => $success]);
     }
 
     public function remove() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method ' . $_SERVER['REQUEST_METHOD'] . ' Not Allowed']);
+            exit();
+        }
+
         $data = json_decode(file_get_contents('php://input'), true);
         $recipeId = $data['id'] ?? null;
-        if (!$recipeId) {
+
+        if ($recipeId === null) {
             echo json_encode(['error' => 'Recipe ID is required']);
-            return;
+            exit();
         }
 
-        if (!$this->favoriteService->isFavorite($this->userId, $recipeId)) {
+        $isFav = $this->favoriteService->isFavorite($this->userId, $recipeId);
+        if ($isFav) {
+            $this->favoriteService->removeFromFavorite($this->userId, $recipeId);
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => 'Removed from favorites']);
+        } else {
+            http_response_code(500);
             echo json_encode(['success' => false, 'message' => 'Not in favorites']);
-            return;
         }
-
-        $success = $this->favoriteService->removeFromFavorite($this->userId, $recipeId);
-        echo json_encode(['success' => $success]);
     }
 }
